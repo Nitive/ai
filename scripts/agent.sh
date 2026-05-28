@@ -32,6 +32,7 @@ docker run --runtime=runsc --rm -it \
   -v "$HOME/.agents/skills:$HOME/.codex/skills:ro" \
   -v "$HOME/.agents/skills:$HOME/.gemini/skills:ro" \
   -v "$PWD:$PWD" \
+  -v "$prefix-venv:$PWD/.venv" \
   -w "$PWD" \
   -e "TERM=xterm-kitty" \
   --add-host=host.docker.internal:host-gateway \
