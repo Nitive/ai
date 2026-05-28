@@ -12,6 +12,7 @@ RUN apt-get update && apt-get upgrade -y && \
         yq \
         bash \
         curl \
+        wget \
         less \
         vim \
         kitty-terminfo
@@ -63,6 +64,14 @@ ENV PATH="/usr/lib/postgresql/18/bin:$PATH"
 ENV BASH_ENV=$HOME/.bash_profile
 RUN echo 'eval "$(mise activate bash)"' >> ~/.bash_profile && \
     echo '[[ -f ~/.bash_profile ]] && source ~/.bash_profile' >> ~/.bashrc
+
+RUN wget -qO difft.tar.gz https://github.com/Wilfred/difftastic/releases/latest/download/difft-x86_64-unknown-linux-gnu.tar.gz && \
+    sudo tar xf difft.tar.gz -C /usr/local/bin && \
+    rm difft.tar.gz
+
+RUN wget -qO delta.deb https://github.com/dandavison/delta/releases/download/0.19.2/git-delta_0.19.2_amd64.deb && \
+    sudo dpkg -i delta.deb && \
+    rm delta.deb
 
 RUN --mount=type=cache,target=$HOME/.cache/mise/,uid=$USER_ID,gid=$GROUP_ID mise use --global node@lts
 
