@@ -76,6 +76,7 @@ RUN wget -qO delta.deb https://github.com/dandavison/delta/releases/download/0.1
     sudo dpkg -i delta.deb && \
     rm delta.deb
 
+ENV MISE_FETCH_REMOTE_VERSIONS_TIMEOUT=5s
 RUN --mount=type=cache,target=$HOME/.cache/mise/,uid=$USER_ID,gid=$GROUP_ID mise use --global node@lts
 
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
