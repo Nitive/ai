@@ -73,6 +73,11 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN mkdir -p $HOME/.local/bin && \
     bash -c 'corepack enable --install-directory $HOME/.local/bin'
 
-RUN bash -c 'pnpm add -g @openai/codex @google/gemini-cli @juliusbrussee/caveman-code'
+ENV GEMINI_VERSION=latest \
+    CODEX_VERSION=latest \
+    CAVEMAN_VERSION=latest
+
+RUN bash -c "pnpm add -g @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash'
-ENV EDITOR=vim
+ENV EDITOR=vim \
+    LOCALHOST_HOSTNAME=host.docker.internal
