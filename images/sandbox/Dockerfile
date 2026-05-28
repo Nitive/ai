@@ -1,5 +1,7 @@
 FROM ubuntu:26.04
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y \
         build-essential \
@@ -15,6 +17,7 @@ RUN apt-get update && apt-get upgrade -y && \
         wget \
         less \
         vim \
+        gettext \
         kitty-terminfo
 
 RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
