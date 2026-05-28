@@ -36,4 +36,5 @@ docker run --runtime=runsc --rm -it \
   -w "$PWD" \
   -e "TERM=xterm-kitty" \
   --add-host=host.docker.internal:host-gateway \
-  local/sandbox:latest bash -c "echo Starting...; mise trust ~ &> /dev/null; mise trust &> /dev/null; $args"
+  local/sandbox:latest \
+  bash --noprofile -c "echo Starting...; /usr/bin/mise trust ~ &> /dev/null; /usr/bin/mise trust \$PWD &> /dev/null; exec bash -c '$args'"
