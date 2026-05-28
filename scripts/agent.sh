@@ -14,6 +14,9 @@ case "${1:-}" in
   codex)
     args="codex --sandbox danger-full-access --ask-for-approval on-request"
     ;;
+  caveman)
+    args="caveman --caveman-mode full"
+    ;;
   *)
     args=${@:-bash}
     ;;
