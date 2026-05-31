@@ -22,7 +22,10 @@ case "${1:-}" in
     ;;
 esac
 
-docker run --runtime=runsc --rm -it \
+# runtime_flags="--runtime=kata"
+runtime_flags="--runtime=runsc"
+
+docker run $runtime_flags --rm -it \
   -v "$prefix-home:$HOME" \
   -v "$HOME/.codex:$HOME/.codex" \
   -v "$HOME/.gemini:$HOME/.gemini" \
