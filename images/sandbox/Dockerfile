@@ -93,4 +93,5 @@ ENV GEMINI_VERSION=latest \
 RUN bash -c "pnpm add -g @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash'
 ENV EDITOR=vim \
-    LOCALHOST_HOSTNAME=host.docker.internal
+    LOCALHOST_HOSTNAME=host.docker.internal \
+    UV_PROJECT_ENVIRONMENT=.venv-agent
