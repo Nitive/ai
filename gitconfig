@@ -1,0 +1,50 @@
+[core]
+  excludesfile = ~/.config/git/ignore
+  quotepath = false
+  autocrlf = false
+  safecrlf = true
+  mergetool = vimdiff
+  pager = delta
+  editor = nvim -n
+  whitespace = cr-at-eol
+  ignorecase = false
+[user]
+  name = Maxim Samoilov
+  email = git@nitive.me
+[alias]
+  type = cat-file -t
+  dump = cat-file -p
+  today = log --since=6am
+[filter "media"]
+  clean = git-media-clean %f
+  smudge = git-media-smudge %f
+[mergetool]
+  keepBackup = true
+[color]
+  ui = always
+[push]
+  default = simple
+[filter "lfs"]
+  required = true
+  clean = git-lfs clean -- %f
+  smudge = git-lfs smudge -- %f
+  process = git-lfs filter-process
+[merge]
+  tool = vimdiff
+  conflictStyle = zdiff3
+[diff]
+  compactionHeuristic = true
+[branch]
+  autoSetupMerge = false
+[fetch]
+  prune = true
+[pull]
+  ff = only
+[init]
+  defaultBranch = main
+[interactive]
+  diffFilter = delta --color-only
+[delta]
+  navigate = true
+  dark = true
+  theme = "1337"

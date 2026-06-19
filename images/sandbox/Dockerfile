@@ -1,4 +1,4 @@
-FROM ubuntu:26.04
+FROM ubuntu:26.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -64,9 +64,13 @@ RUN sudo apt-get update
 RUN sudo apt-get install -y postgresql-18 postgresql-client-18 mise
 ENV PATH="/usr/lib/postgresql/18/bin:$PATH"
 
-ENV BASH_ENV=$HOME/.bash_profile
-RUN echo 'eval "$(mise activate bash)"' >> ~/.bash_profile && \
-    echo '[[ -f ~/.bash_profile ]] && source ~/.bash_profile' >> ~/.bashrc
+ENV TOOLS_DIR=/opt/tools
+RUN sudo mkdir -p $TOOLS_DIR && sudo chown -R $USER_ID:$GROUP_ID $TOOLS_DIR
+
+ENV BASH_ENV=/etc/bash.bashrc
+RUN echo 'eval "$(mise activate bash)"' | sudo tee -a /etc/bash.bashrc && \
+    echo 'export PATH="$TOOLS_DIR/bin:$TOOLS_DIR/pnpm/bin:$TOOLS_DIR/.mimocode/bin:$HOME/.local/share/pnpm/bin:$PATH"' | sudo tee -a /etc/bash.bashrc && \
+    echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' | sudo tee -a /etc/bash.bashrc
 
 RUN wget -qO difft.tar.gz https://github.com/Wilfred/difftastic/releases/latest/download/difft-x86_64-unknown-linux-gnu.tar.gz && \
     sudo tar xf difft.tar.gz -C /usr/local/bin && \
@@ -76,22 +80,24 @@ RUN wget -qO delta.deb https://github.com/dandavison/delta/releases/download/0.1
     sudo dpkg -i delta.deb && \
     rm delta.deb
 
-ENV MISE_FETCH_REMOTE_VERSIONS_TIMEOUT=5s
-RUN --mount=type=cache,target=$HOME/.cache/mise/,uid=$USER_ID,gid=$GROUP_ID mise use --global node@lts
+RUN curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash - && \
+    sudo apt-get install -y nodejs && \
+    sudo npm install -g corepack
 
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
-ENV PATH="$HOME/.local/bin:$PNPM_HOME/bin:$PATH"
+ENV PATH="$TOOLS_DIR/bin:$TOOLS_DIR/pnpm/bin:$TOOLS_DIR/.mimocode/bin:$HOME/.local/share/pnpm/bin:$PATH"
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
-RUN mkdir -p $HOME/.local/bin && \
-    bash -c 'corepack enable --install-directory $HOME/.local/bin'
+RUN mkdir -p $TOOLS_DIR/bin && \
+    bash -c 'corepack enable --install-directory $TOOLS_DIR/bin'
 
-ENV GEMINI_VERSION=latest \
+ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \
-    CAVEMAN_VERSION=latest
+    CAVEMAN_VERSION=latest \
+    MIMO_VERSION=latest
 
-RUN bash -c "pnpm add -g @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
-RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash'
+RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*'"
+RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'
 ENV EDITOR=vim \
     LOCALHOST_HOSTNAME=host.docker.internal \
     UV_PROJECT_ENVIRONMENT=.venv-agent
