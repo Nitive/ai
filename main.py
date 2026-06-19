@@ -27,33 +27,46 @@ def main():
         f"{prefix}-venv:{pwd}/.venv",
         f"{root_dir}/gitconfig:{home}/.gitconfig:ro",
         f"{home}/.config/git/ignore:{home}/.config/git/ignore:ro",
+        f"{home}/.agents:{home}/.agents:ro",
     ]
+
+    mcp_config_paths = ["/opt/mcps/jcodemunch/mcp_config.json"]
+
+    pre_start_script = [
+        "echo 'Starting...'",
+        "mise trust --all --yes --silent",
+        "mise install --yes",
+        "echo '{}' > /tmp/empty.json",
+        f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/mcp_config.json",
+    ]
+    def add_mcps(path: str):
+        pre_start_script.append(f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > '{path}'")
 
     if args.agent == "agy":
         cmd = ["agy", "--dangerously-skip-permissions"] + unknown
         mounts.extend(
             [
                 f"{home}/.antigravity:{home}/.antigravity",
-                f"{home}/.agents:{home}/.agents:ro",
                 f"{home}/.gemini:{home}/.gemini",
                 f"{home}/.agents/skills:{home}/.gemini/skills:ro",
             ]
         )
+        add_mcps(f'{home}/.gemini/config/mcp_config.json')
+        add_mcps(f'{home}/.gemini/antigravity/mcp_config.json')
     elif args.agent == "gemini":
         cmd = ["gemini", "--yolo", "--no-sandbox", "--allowed-mcp-server-names=context7", "--skip-trust"] + unknown
         mounts.extend(
             [
                 f"{home}/.gemini:{home}/.gemini",
-                f"{home}/.agents:{home}/.agents:ro",
                 f"{home}/.agents/skills:{home}/.gemini/skills:ro",
             ]
         )
+        add_mcps(f'{home}/.gemini/config/mcp_config.json')
     elif args.agent == "codex":
         cmd = ["codex", "--sandbox", "danger-full-access", "--ask-for-approval", "on-request"] + unknown
         mounts.extend(
             [
                 f"{home}/.codex:{home}/.codex",
-                f"{home}/.agents:{home}/.agents:ro",
                 f"{home}/.agents/skills:{home}/.codex/skills:ro",
             ]
         )
@@ -62,16 +75,10 @@ def main():
         mounts.extend(
             [
                 f"{home}/.cave:{home}/.cave",
-                f"{home}/.agents:{home}/.agents:ro",
             ]
         )
     elif args.agent == "mimo":
         cmd = ["mimo"] + unknown
-        mounts.extend(
-            [
-                f"{home}/.agents:{home}/.agents:ro",
-            ]
-        )
     else:
         if args.agent == "bash" and not unknown:
             cmd = ["bash"]
@@ -85,6 +92,7 @@ def main():
         "run",
         "--rm",
         "-it",
+        "--userns=host",
     ]
 
     if args.runtime:
@@ -104,7 +112,12 @@ def main():
             "bash",
             "--noprofile",
             "-c",
-            f"echo 'Starting...' && /usr/bin/mise trust --all --yes --silent && mise install --yes && exec bash -c {shlex.quote(cmd_str)}",
+            " && ".join(
+                [
+                    *pre_start_script,
+                    f"exec bash -c {shlex.quote(cmd_str)}",
+                ]
+            ),
         ]
     )
 

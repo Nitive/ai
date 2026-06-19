@@ -1,7 +1,7 @@
 export SANDBOX_IMAGE := local/sandbox
 
 build-sandbox:
-	@ docker build . -f images/sandbox/Dockerfile \
+	@ docker build ./images/sandbox/ -f images/sandbox/Dockerfile \
 	  --build-arg GEMINI_VERSION=$(shell pnpm info @google/gemini-cli --json | jq -r .version) \
 	  --build-arg CODEX_VERSION=$(shell pnpm info @openai/codex --json | jq -r .version) \
 	  --build-arg CAVEMAN_VERSION=$(shell pnpm info @juliusbrussee/caveman-code --json | jq -r .version) \

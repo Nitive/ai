@@ -91,6 +91,17 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN mkdir -p $TOOLS_DIR/bin && \
     bash -c 'corepack enable --install-directory $TOOLS_DIR/bin'
 
+# Set current user permissions for directory
+WORKDIR /opt/mise
+
+ENV PATH="/opt/mise/shims:$PATH"
+WORKDIR /opt/mcps/jcodemunch
+COPY ./mcps/jcodemunch/ ./
+USER root
+RUN chown $USER_ID:$GROUP_ID -R ./
+USER $USER_ID:$GROUP_ID
+RUN ./install.sh
+
 ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \
     CAVEMAN_VERSION=latest \

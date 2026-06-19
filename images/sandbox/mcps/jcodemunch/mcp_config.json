@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "jcodemunch": {
+      "command": "/opt/mcps/jcodemunch/start.sh"
+    }
+  }
+}
