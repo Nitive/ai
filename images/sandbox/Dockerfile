@@ -70,7 +70,8 @@ RUN sudo mkdir -p $TOOLS_DIR && sudo chown -R $USER_ID:$GROUP_ID $TOOLS_DIR
 ENV BASH_ENV=/etc/bash.bashrc
 RUN echo 'eval "$(mise activate bash)"' | sudo tee -a /etc/bash.bashrc && \
     echo 'export PATH="$TOOLS_DIR/bin:$TOOLS_DIR/pnpm/bin:$TOOLS_DIR/.mimocode/bin:$HOME/.local/share/pnpm/bin:$PATH"' | sudo tee -a /etc/bash.bashrc && \
-    echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' | sudo tee -a /etc/bash.bashrc
+    echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' | sudo tee -a /etc/bash.bashrc && \
+    echo 'set -o vi' | sudo tee -a /etc/bash.bashrc
 
 RUN wget -qO difft.tar.gz https://github.com/Wilfred/difftastic/releases/latest/download/difft-x86_64-unknown-linux-gnu.tar.gz && \
     sudo tar xf difft.tar.gz -C /usr/local/bin && \
@@ -107,7 +108,7 @@ ARG GEMINI_VERSION=latest \
     CAVEMAN_VERSION=latest \
     MIMO_VERSION=latest
 
-RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*'"
+RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'
 ENV EDITOR=vim \
     LOCALHOST_HOSTNAME=host.docker.internal \

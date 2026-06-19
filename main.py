@@ -39,8 +39,15 @@ def main():
         "echo '{}' > /tmp/empty.json",
         f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/mcp_config.json",
     ]
+
     def add_mcps(path: str):
         pre_start_script.append(f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > '{path}'")
+
+    def configure_jcodemunch():
+        pre_start_script.extend([
+            "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
+            'echo "jcodemunch-mcp index success: $(/opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp index $PWD | jq .success)"',
+        ])
 
     if args.agent == "agy":
         cmd = ["agy", "--dangerously-skip-permissions"] + unknown
@@ -51,8 +58,10 @@ def main():
                 f"{home}/.agents/skills:{home}/.gemini/skills:ro",
             ]
         )
-        add_mcps(f'{home}/.gemini/config/mcp_config.json')
-        add_mcps(f'{home}/.gemini/antigravity/mcp_config.json')
+        configure_jcodemunch()
+        add_mcps(f"{home}/.gemini/config/mcp_config.json")
+        add_mcps(f"{home}/.gemini/antigravity/mcp_config.json")
+
     elif args.agent == "gemini":
         cmd = ["gemini", "--yolo", "--no-sandbox", "--allowed-mcp-server-names=context7", "--skip-trust"] + unknown
         mounts.extend(
@@ -61,7 +70,9 @@ def main():
                 f"{home}/.agents/skills:{home}/.gemini/skills:ro",
             ]
         )
-        add_mcps(f'{home}/.gemini/config/mcp_config.json')
+        configure_jcodemunch()
+        add_mcps(f"{home}/.gemini/config/mcp_config.json")
+
     elif args.agent == "codex":
         cmd = ["codex", "--sandbox", "danger-full-access", "--ask-for-approval", "on-request"] + unknown
         mounts.extend(
@@ -70,6 +81,7 @@ def main():
                 f"{home}/.agents/skills:{home}/.codex/skills:ro",
             ]
         )
+
     elif args.agent == "caveman":
         cmd = ["caveman", "--caveman-mode", "full"] + unknown
         mounts.extend(
@@ -77,8 +89,10 @@ def main():
                 f"{home}/.cave:{home}/.cave",
             ]
         )
+
     elif args.agent == "mimo":
         cmd = ["mimo"] + unknown
+
     else:
         if args.agent == "bash" and not unknown:
             cmd = ["bash"]
