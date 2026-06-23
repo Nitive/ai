@@ -81,6 +81,10 @@ RUN wget -qO delta.deb https://github.com/dandavison/delta/releases/download/0.1
     sudo dpkg -i delta.deb && \
     rm delta.deb
 
+RUN wget -qO gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz && \
+    sudo tar xf gitleaks.tar.gz -C /usr/local/bin gitleaks && \
+    rm gitleaks.tar.gz
+
 RUN curl -fsSL https://deb.nodesource.com/setup_26.x | sudo -E bash - && \
     sudo apt-get install -y nodejs && \
     sudo npm install -g corepack

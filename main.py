@@ -36,6 +36,7 @@ def main():
         "echo 'Starting...'",
         "mise trust --all --yes --silent",
         "mise install --yes",
+        "gitleaks detect --no-git --source . -v",
         "echo '{}' > /tmp/empty.json",
         f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/mcp_config.json",
     ]
@@ -44,10 +45,12 @@ def main():
         pre_start_script.append(f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > '{path}'")
 
     def configure_jcodemunch():
-        pre_start_script.extend([
-            "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
-            'echo "jcodemunch-mcp index success: $(/opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp index $PWD | jq .success)"',
-        ])
+        pre_start_script.extend(
+            [
+                "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
+                'echo "jcodemunch-mcp index success: $(/opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp index $PWD | jq .success)"',
+            ]
+        )
 
     if args.agent == "agy":
         cmd = ["agy", "--dangerously-skip-permissions"] + unknown
