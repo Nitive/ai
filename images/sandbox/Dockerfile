@@ -112,7 +112,7 @@ ARG GEMINI_VERSION=latest \
     CAVEMAN_VERSION=latest \
     MIMO_VERSION=latest
 
-RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @juliusbrussee/caveman-code@${CAVEMAN_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*'"
+RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*' && pnpm add -g --config.node-linker=hoisted @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'
 ENV EDITOR=vim \
     LOCALHOST_HOSTNAME=host.docker.internal \
