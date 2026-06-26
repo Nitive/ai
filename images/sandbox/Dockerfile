@@ -56,22 +56,22 @@ RUN sudo install -d /usr/share/postgresql-common/pgdg && \
     'Signed-By: /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc' \
     | sudo tee /etc/apt/sources.list.d/pgdg.sources > /dev/null
 
-RUN sudo install -dm 755 /etc/apt/keyrings && \
-    curl -fSs https://mise.en.dev/gpg-key.pub | sudo tee /etc/apt/keyrings/mise-archive-keyring.asc 1> /dev/null && \
-    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.asc] https://mise.en.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
-
 RUN sudo apt-get update
-RUN sudo apt-get install -y postgresql-18 postgresql-client-18 mise
+RUN sudo apt-get install -y postgresql-18 postgresql-client-18
 ENV PATH="/usr/lib/postgresql/18/bin:$PATH"
 
 ENV TOOLS_DIR=/opt/tools
 RUN sudo mkdir -p $TOOLS_DIR && sudo chown -R $USER_ID:$GROUP_ID $TOOLS_DIR
 
+ARG MISE_VERSION=latest
+RUN curl https://mise.run | MISE_INSTALL_PATH=${TOOLS_DIR}/bin/mise MISE_VERSION=${MISE_VERSION} sh
+
 ENV BASH_ENV=/etc/bash.bashrc
-RUN echo 'eval "$(mise activate bash)"' | sudo tee -a /etc/bash.bashrc && \
-    echo 'export PATH="$TOOLS_DIR/bin:$TOOLS_DIR/pnpm/bin:$TOOLS_DIR/.mimocode/bin:$HOME/.local/share/pnpm/bin:$PATH"' | sudo tee -a /etc/bash.bashrc && \
-    echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' | sudo tee -a /etc/bash.bashrc && \
-    echo 'set -o vi' | sudo tee -a /etc/bash.bashrc
+RUN echo 'eval "$(mise activate bash)"' | sudo tee -a /etc/bash-extend.bashrc && \
+    echo 'export PATH="$TOOLS_DIR/bin:$TOOLS_DIR/pnpm/bin:$TOOLS_DIR/.mimocode/bin:$HOME/.local/share/pnpm/bin:$PATH"' | sudo tee -a /etc/bash-extend.bashrc && \
+    echo 'export PNPM_HOME="$HOME/.local/share/pnpm"' | sudo tee -a /etc/bash-extend.bashrc && \
+    echo 'set -o vi' | sudo tee -a /etc/bash-extend.bashrc && \
+    echo ". /etc/bash-extend.bashrc\n\n$(cat /etc/bash.bashrc)" | sudo tee /etc/bash.bashrc
 
 RUN wget -qO difft.tar.gz https://github.com/Wilfred/difftastic/releases/latest/download/difft-x86_64-unknown-linux-gnu.tar.gz && \
     sudo tar xf difft.tar.gz -C /usr/local/bin && \
@@ -96,22 +96,20 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN mkdir -p $TOOLS_DIR/bin && \
     bash -c 'corepack enable --install-directory $TOOLS_DIR/bin'
 
-# Set current user permissions for directory
-WORKDIR /opt/mise
-WORKDIR "$HOME/.cave"
+RUN export dirs="/opt/mise ~/.cave /opt/mcps/jcodemunch $TOOLS_DIR" && \
+    sudo mkdir -p $dirs && \
+    sudo chown $USER_ID:$GROUP_ID $dirs
 
 ENV PATH="/opt/mise/shims:$PATH"
 WORKDIR /opt/mcps/jcodemunch
 COPY ./mcps/jcodemunch/ ./
-USER root
-RUN chown $USER_ID:$GROUP_ID -R ./
-USER $USER_ID:$GROUP_ID
 RUN ./install.sh
 
 ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \
     CAVEMAN_VERSION=latest \
-    MIMO_VERSION=latest
+    MIMO_VERSION=latest \
+    HERDR_VERSION=latest
 
 RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*' && pnpm add -g --config.node-linker=hoisted @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'

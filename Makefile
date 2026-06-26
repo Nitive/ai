@@ -6,6 +6,7 @@ build-sandbox:
 	  --build-arg CODEX_VERSION=$(shell pnpm info @openai/codex --json | jq -r .version) \
 	  --build-arg CAVEMAN_VERSION=$(shell pnpm info @juliusbrussee/caveman-code --json | jq -r .version) \
 	  --build-arg MIMO_VERSION=$(shell pnpm info @mimo-ai/cli --json | jq -r .version) \
+	  --build-arg MISE_VERSION=$(shell mise version --json | jq -r .latest) \
 	  --build-arg HOME=$$HOME \
 	  --build-arg PWD=$$PWD \
 	  --build-arg USER=$(shell id -un) \
@@ -21,3 +22,7 @@ build-all:
 test-sandbox:
 	make build-sandbox target=base
 	./scripts/agent.sh bash
+
+test-sandbox-plain-bash:
+	make build-sandbox target=base
+	docker run -it --rm $(SANDBOX_IMAGE):base bash
