@@ -39,6 +39,7 @@ def main():
         "gitleaks detect --no-git --source . -v",
         "echo '{}' > /tmp/empty.json",
         f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/mcp_config.json",
+        f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/.cave/mcp.json",
     ]
 
     def add_mcps(path: str):
@@ -86,7 +87,7 @@ def main():
         )
 
     elif args.agent == "caveman":
-        cmd = ["caveman", "--caveman-mode", "full"] + unknown
+        cmd = ["caveman"] + unknown
         mounts.extend(
             [
                 f"{home}/.cave:{home}/.cave",

@@ -98,6 +98,7 @@ RUN mkdir -p $TOOLS_DIR/bin && \
 
 # Set current user permissions for directory
 WORKDIR /opt/mise
+WORKDIR "$HOME/.cave"
 
 ENV PATH="/opt/mise/shims:$PATH"
 WORKDIR /opt/mcps/jcodemunch
