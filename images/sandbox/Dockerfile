@@ -18,7 +18,8 @@ RUN apt-get update && apt-get upgrade -y && \
         less \
         vim \
         gettext \
-        kitty-terminfo
+        kitty-terminfo \
+        docker.io
 
 RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
 
@@ -39,9 +40,10 @@ RUN userdel --remove ubuntu && \
     --uid $USER_ID \
     --gid $GROUP_ID \
     $USER && \
+    usermod -aG docker $USER && \
     echo "$USER ALL=NOPASSWD: ALL" >> /etc/sudoers
 
-USER $USER_ID:$GROUP_ID
+USER $USER
 WORKDIR $HOME
 
 RUN sudo install -d /usr/share/postgresql-common/pgdg && \

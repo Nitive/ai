@@ -9,6 +9,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run AI agent in sandbox")
     _ = parser.add_argument("--engine", default="docker", choices=["docker", "podman"], help="Container engine")
     _ = parser.add_argument("--runtime", default="runsc", help="Container runtime (e.g. runsc, kata)")
+    _ = parser.add_argument("--docker", action=argparse.BooleanOptionalAction, help="Enable docker support")
     _ = parser.add_argument(
         "agent", nargs="?", default="bash", help="Agent to run (agy, gemini, codex, caveman) or command"
     )
@@ -110,8 +111,44 @@ def main():
         "run",
         "--rm",
         "-it",
-        "--userns=host",
+        "--userns",
+        "host",
     ]
+
+    if args.docker:
+        args.runtime = "io.containerd.kata.v2"
+        docker_cmd.extend(
+            [
+                "--cpus",
+                "4",
+                "--memory",
+                "12g",
+                "--security-opt",
+                "seccomp=unconfined",
+                "--security-opt",
+                "apparmor=unconfined",
+                "--security-opt",
+                "systempaths=unconfined",
+                "--cap-add",
+                "ALL",
+                "--device",
+                "/dev/fuse",
+                "--sysctl",
+                "net.ipv4.ip_forward=1",
+                "-v",
+                "/dev/null:/dev/kmsg",
+                "--tmpfs",
+                "/run",
+                "--tmpfs",
+                "/var/run",
+            ]
+        )
+        pre_start_script.extend(
+            [
+                "sudo bash -c 'mount -o remount,rw /sys/fs/cgroup || mount -t cgroup2 none /sys/fs/cgroup'",
+                "pm2 start sudo --name docker --interpreter none -- dockerd",
+            ]
+        )
 
     if args.runtime:
         docker_cmd.extend(["--runtime", args.runtime])
