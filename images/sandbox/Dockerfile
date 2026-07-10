@@ -109,6 +109,10 @@ WORKDIR /opt/mcps/jcodemunch
 COPY ./mcps/jcodemunch/ ./
 RUN ./install.sh
 
+WORKDIR /opt/mcps/archcore
+COPY ./mcps/archcore/ ./
+RUN ./install.sh
+
 ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \
     CAVEMAN_VERSION=latest \

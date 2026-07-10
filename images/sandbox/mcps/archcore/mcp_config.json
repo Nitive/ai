@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "archcore": {
+      "type": "stdio",
+      "command": "/opt/mcps/archcore/start.sh"
+    }
+  }
+}

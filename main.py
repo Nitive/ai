@@ -31,26 +31,24 @@ def main():
         f"{home}/.agents:{home}/.agents:ro",
     ]
 
-    mcp_config_paths = ["/opt/mcps/jcodemunch/mcp_config.json"]
-
     pre_start_script = [
         "echo 'Starting...'",
         "mise trust --all --yes --silent",
         "mise install --yes",
         "gitleaks detect --no-git --source . -v",
         "echo '{}' > /tmp/empty.json",
-        f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/mcp_config.json",
-        f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > ~/.cave/mcp.json",
     ]
 
     def add_mcps(path: str):
-        pre_start_script.append(f"jq -s '.[0] * .[1]' /tmp/empty.json {' '.join(mcp_config_paths)} > '{path}'")
+        pre_start_script.append(f"jq -s 'reduce .[] as $item ({{}}; . * $item)' /opt/mcps/*/mcp_config.json > '{path}'")
+
+    add_mcps(f"{home}/mcp_config.json")
 
     def configure_jcodemunch():
         pre_start_script.extend(
             [
                 "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
-                'echo "jcodemunch-mcp index success: $(/opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp index $PWD | jq .success)"',
+                "pm2 start --no-autorestart /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch-initial-index --interpreter none -- index $PWD",
             ]
         )
 
@@ -94,6 +92,7 @@ def main():
                 f"{home}/.cave:{home}/.cave",
             ]
         )
+        add_mcps(f"{home}/.cave/mcp.json")
 
     elif args.agent == "mimo":
         cmd = ["mimo"] + unknown
@@ -166,6 +165,8 @@ def main():
             pwd,
             "-e",
             "TERM=xterm-kitty",
+            "-e",
+            f"PROJECT_DIR={pwd}",
             "--add-host=host.docker.internal:host-gateway",
             "local/sandbox:base",
             "bash",
