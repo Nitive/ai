@@ -18,8 +18,10 @@ RUN apt-get update && apt-get upgrade -y && \
         less \
         vim \
         gettext \
-        kitty-terminfo \
-        docker.io
+        kitty-terminfo
+
+COPY install-docker.sh /tmp/install-docker.sh
+RUN /tmp/install-docker.sh && rm /tmp/install-docker.sh
 
 RUN chown root:root /usr/bin/sudo && chmod 4755 /usr/bin/sudo
 
