@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "jcodemunch": {
+      "type": "stdio",
       "command": "/opt/mcps/jcodemunch/start.sh"
     }
   }

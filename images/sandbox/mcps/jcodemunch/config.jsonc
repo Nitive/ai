@@ -1,0 +1,3 @@
+{
+	"exclude_secret_patterns": ["*secret*"]
+}
