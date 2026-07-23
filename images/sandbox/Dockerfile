@@ -8,6 +8,7 @@ RUN apt-get update && apt-get upgrade -y && \
         sudo \
         ca-certificates \
         git \
+        git-lfs \
         openssl \
         ripgrep \
         jq \
@@ -18,6 +19,7 @@ RUN apt-get update && apt-get upgrade -y && \
         less \
         vim \
         gettext \
+        ruby-full \
         kitty-terminfo
 
 COPY install-docker.sh /tmp/install-docker.sh
