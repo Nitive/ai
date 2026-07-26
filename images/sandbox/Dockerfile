@@ -110,6 +110,7 @@ ENV PATH="/opt/mise/shims:$PATH"
 WORKDIR /opt/mcps/jcodemunch
 COPY ./mcps/jcodemunch/ ./
 RUN ./install.sh
+ENV JCODEMUNCH_MAX_FOLDER_FILES=100000
 
 WORKDIR /opt/mcps/archcore
 COPY ./mcps/archcore/ ./
