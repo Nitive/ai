@@ -6,6 +6,7 @@ build-sandbox:
 	  --build-arg CODEX_VERSION=$(shell pnpm info @openai/codex --json | jq -r .version) \
 	  --build-arg CAVEMAN_VERSION=$(shell pnpm info @juliusbrussee/caveman-code --json | jq -r .version) \
 	  --build-arg MIMO_VERSION=$(shell pnpm info @mimo-ai/cli --json | jq -r .version) \
+	  --build-arg OPEN_DESIGN_VERSION=$(shell git ls-remote --tags --refs https://github.com/nexu-io/open-design.git | cut -d/ -f3 | grep '^open-design-v[0-9]\+\.[0-9]\+\.[0-9]\+$$' | sort -V | tail -n 1) \
 	  --build-arg MISE_VERSION=$(shell mise version --json | jq -r .latest) \
 	  --build-arg ARCHCORE_VERSION=$(shell mise latest github:archcore-ai/cli) \
 	  --build-arg HOME=$$HOME \

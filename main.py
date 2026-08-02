@@ -1,7 +1,7 @@
+import secrets
 import argparse
 import os
 import shlex
-import sys
 from pathlib import Path
 
 
@@ -10,6 +10,7 @@ def main():
     _ = parser.add_argument("--engine", default="docker", choices=["docker", "podman"], help="Container engine")
     _ = parser.add_argument("--runtime", default="runsc", help="Container runtime (e.g. runsc, kata)")
     _ = parser.add_argument("--docker", action=argparse.BooleanOptionalAction, help="Enable docker support")
+    _ = parser.add_argument("--open-design", action=argparse.BooleanOptionalAction, help="Enable Open Design daemon")
     _ = parser.add_argument(
         "agent", nargs="?", default="bash", help="Agent to run (agy, gemini, codex, caveman) or command"
     )
@@ -33,6 +34,7 @@ def main():
 
     pre_start_script = [
         "echo 'Starting...'",
+        "sudo chown nitive:nitive ~/* ~/.* &> /dev/null || true",
         "mise trust --all --yes --silent",
         "mise install --yes",
         "gitleaks detect --no-git --source . -v",
@@ -152,6 +154,12 @@ def main():
                 "pm2 start sudo --name docker --interpreter none -- dockerd",
             ]
         )
+
+    if args.open_design:
+        pre_start_script.append(
+            "pm2 start mise --name open-design --cwd /opt/tools/open-design --interpreter none -- exec node@24 -- node apps/daemon/dist/cli.js --no-open"
+        )
+        docker_cmd.extend(["--publish", "127.0.0.1:7456:7456"])
 
     if args.runtime:
         docker_cmd.extend(["--runtime", args.runtime])

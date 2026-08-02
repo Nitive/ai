@@ -20,6 +20,8 @@ RUN apt-get update && apt-get upgrade -y && \
         vim \
         gettext \
         ruby-full \
+        libglib2.0-bin \
+        zenity \
         kitty-terminfo
 
 COPY install-docker.sh /tmp/install-docker.sh
@@ -121,10 +123,28 @@ ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \
     CAVEMAN_VERSION=latest \
     MIMO_VERSION=latest \
-    HERDR_VERSION=latest
+    HERDR_VERSION=latest \
+    OPEN_DESIGN_VERSION=open-design-v0.16.1
 
 RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*' && pnpm add -g --config.node-linker=hoisted @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'
+
+RUN git clone --branch "${OPEN_DESIGN_VERSION}" --depth 1 https://github.com/nexu-io/open-design.git /opt/tools/open-design && \
+    MISE_DATA_DIR=/opt/mise MISE_CONFIG_DIR=/opt/mise MISE_CACHE_DIR=/opt/mise/cache mise install node@24 && \
+    cd /opt/tools/open-design && \
+    MISE_DATA_DIR=/opt/mise MISE_CONFIG_DIR=/opt/mise MISE_CACHE_DIR=/opt/mise/cache \
+    mise exec node@24 -- corepack pnpm install --frozen-lockfile && \
+    MISE_DATA_DIR=/opt/mise MISE_CONFIG_DIR=/opt/mise MISE_CACHE_DIR=/opt/mise/cache \
+    mise exec node@24 -- corepack pnpm bootstrap && \
+    MISE_DATA_DIR=/opt/mise MISE_CONFIG_DIR=/opt/mise MISE_CACHE_DIR=/opt/mise/cache \
+    mise exec node@24 -- corepack pnpm --filter @open-design/web build
+
 ENV EDITOR=vim \
     LOCALHOST_HOSTNAME=host.docker.internal \
-    UV_PROJECT_ENVIRONMENT=.venv-agent
+    UV_PROJECT_ENVIRONMENT=.venv-agent \
+    OD_BIND_HOST="0.0.0.0" \
+    OD_ALLOWED_ORIGINS="http://localhost:7456" \
+    OD_DISABLE_API_AUTH=1 \
+    OD_CODEX_SANDBOX=danger-full-access \
+    OD_PORT=7456 \
+    NODE_ENV=production
