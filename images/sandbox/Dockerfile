@@ -114,7 +114,8 @@ ENV JCODEMUNCH_MAX_FOLDER_FILES=100000
 
 WORKDIR /opt/mcps/archcore
 COPY ./mcps/archcore/ ./
-RUN ./install.sh
+ARG ARCHCORE_VERSION=latest
+RUN echo "$ARCHCORE_VERSION" > /opt/mcps/archcore/version.txt
 
 ARG GEMINI_VERSION=latest \
     CODEX_VERSION=latest \

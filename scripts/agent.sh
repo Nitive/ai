@@ -2,4 +2,4 @@
 set -euo pipefail
 root_dir="$(dirname "$(dirname "${BASH_SOURCE[0]}")")"
 
-exec uv run "$root_dir/main.py" "$@"
+exec uv --project "$root_dir" run "$root_dir/main.py" "$@"
