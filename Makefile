@@ -9,6 +9,7 @@ build-sandbox:
 	  --build-arg OPEN_DESIGN_VERSION=$(shell git ls-remote --tags --refs https://github.com/nexu-io/open-design.git | cut -d/ -f3 | grep '^open-design-v[0-9]\+\.[0-9]\+\.[0-9]\+$$' | sort -V | tail -n 1) \
 	  --build-arg MISE_VERSION=$(shell mise version --json | jq -r .latest) \
 	  --build-arg ARCHCORE_VERSION=$(shell mise latest github:archcore-ai/cli) \
+	  --build-arg MULTICA_VERSION=$(shell mise latest github:multica-ai/multica) \
 	  --build-arg HOME=$$HOME \
 	  --build-arg PWD=$$PWD \
 	  --build-arg USER=$(shell id -un) \

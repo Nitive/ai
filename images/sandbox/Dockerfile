@@ -124,8 +124,10 @@ ARG GEMINI_VERSION=latest \
     CAVEMAN_VERSION=latest \
     MIMO_VERSION=latest \
     HERDR_VERSION=latest \
-    OPEN_DESIGN_VERSION=open-design-v0.16.1
+    OPEN_DESIGN_VERSION=open-design-v0.16.1 \
+    MULTICA_VERSION=latest
 
+RUN mise use -g github:multica-ai/multica@$MULTICA_VERSION
 RUN bash -c "PNPM_HOME=$TOOLS_DIR/pnpm pnpm add -g pm2 @openai/codex@${CODEX_VERSION} @google/gemini-cli@${GEMINI_VERSION} @mimo-ai/cli@${MIMO_VERSION} --allow-build '*' && pnpm add -g --config.node-linker=hoisted @juliusbrussee/caveman-code@${CAVEMAN_VERSION} --allow-build '*'"
 RUN bash -c 'curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir $TOOLS_DIR/bin'
 
@@ -148,3 +150,5 @@ ENV EDITOR=vim \
     OD_CODEX_SANDBOX=danger-full-access \
     OD_PORT=7456 \
     NODE_ENV=production
+
+COPY ./open-design-scripts/ /opt/tools/open-design-scripts/

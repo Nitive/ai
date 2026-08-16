@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.14"
 
+[manifest]
+members = [
+    "ai",
+    "open-design-scripts",
+]
+
 [[package]]
 name = "ai"
 version = "0.1.0"
@@ -16,6 +22,11 @@ dev = [
 
 [package.metadata.requires-dev]
 dev = [{ name = "ruff", specifier = ">=0.15.18" }]
+
+[[package]]
+name = "open-design-scripts"
+version = "0.1.0"
+source = { virtual = "images/sandbox/open-design-scripts" }
 
 [[package]]
 name = "ruff"

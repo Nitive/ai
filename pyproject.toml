@@ -16,4 +16,6 @@ target-version = "py314"
 line-length = 120
 
 [tool.uv.workspace]
-members = []
+members = [
+    "images/sandbox/open-design-scripts",
+]

@@ -1,4 +1,3 @@
-import secrets
 import argparse
 import os
 import shlex
@@ -44,68 +43,42 @@ def main():
     def add_mcps(path: str):
         pre_start_script.append(f"jq -s 'reduce .[] as $item ({{}}; . * $item)' /opt/mcps/*/mcp_config.json > '{path}'")
 
+    # Shared
     add_mcps(f"{home}/mcp_config.json")
+    pre_start_script.extend(
+        [
+            "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
+            "pm2 start --no-autorestart /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch-initial-index --interpreter none -- index $PWD",
+        ]
+    )
 
-    def configure_jcodemunch():
-        pre_start_script.extend(
-            [
-                "pm2 start /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch --interpreter none -- watch-all",
-                "pm2 start --no-autorestart /opt/mcps/jcodemunch/.venv/bin/jcodemunch-mcp --name mcp-jcodemunch-initial-index --interpreter none -- index $PWD",
-            ]
-        )
+    # Antigravity
+    mounts.extend(
+        [
+            f"{home}/.antigravity:{home}/.antigravity",
+            f"{home}/.gemini:{home}/.gemini",
+            f"{home}/.agents/skills:{home}/.gemini/skills:ro",
+        ]
+    )
+    add_mcps(f"{home}/.gemini/config/mcp_config.json")
+    add_mcps(f"{home}/.gemini/antigravity/mcp_config.json")
 
-    if args.agent == "agy":
-        cmd = ["agy", "--dangerously-skip-permissions"] + unknown
-        mounts.extend(
-            [
-                f"{home}/.antigravity:{home}/.antigravity",
-                f"{home}/.gemini:{home}/.gemini",
-                f"{home}/.agents/skills:{home}/.gemini/skills:ro",
-            ]
-        )
-        configure_jcodemunch()
-        add_mcps(f"{home}/.gemini/config/mcp_config.json")
-        add_mcps(f"{home}/.gemini/antigravity/mcp_config.json")
+    # Codex
+    mounts.extend(
+        [
+            f"{home}/.codex:{home}/.codex",
+        ]
+    )
 
-    elif args.agent == "gemini":
-        cmd = ["gemini", "--yolo", "--no-sandbox", "--allowed-mcp-server-names=context7", "--skip-trust"] + unknown
-        mounts.extend(
-            [
-                f"{home}/.gemini:{home}/.gemini",
-                f"{home}/.agents/skills:{home}/.gemini/skills:ro",
-            ]
-        )
-        configure_jcodemunch()
-        add_mcps(f"{home}/.gemini/config/mcp_config.json")
+    # Caveman
+    mounts.extend(
+        [
+            f"{home}/.cave:{home}/.cave",
+        ]
+    )
+    add_mcps(f"{home}/.cave/mcp.json")
 
-    elif args.agent == "codex":
-        cmd = ["codex", "--sandbox", "danger-full-access", "--ask-for-approval", "on-request"] + unknown
-        mounts.extend(
-            [
-                f"{home}/.codex:{home}/.codex",
-                f"{home}/.agents/skills:{home}/.codex/skills:ro",
-            ]
-        )
-
-    elif args.agent == "caveman":
-        cmd = ["caveman"] + unknown
-        mounts.extend(
-            [
-                f"{home}/.cave:{home}/.cave",
-            ]
-        )
-        add_mcps(f"{home}/.cave/mcp.json")
-
-    elif args.agent == "mimo":
-        cmd = ["mimo"] + unknown
-
-    else:
-        if args.agent == "bash" and not unknown:
-            cmd = ["bash"]
-        else:
-            cmd = [args.agent] + unknown
-
-    cmd_str = " ".join(shlex.quote(c) for c in cmd)
+    cmd_str = " ".join(shlex.quote(c) for c in [args.agent, *unknown])
 
     docker_cmd = [
         args.engine,
@@ -159,6 +132,7 @@ def main():
         pre_start_script.append(
             "pm2 start mise --name open-design --cwd /opt/tools/open-design --interpreter none -- exec node@24 -- node apps/daemon/dist/cli.js --no-open"
         )
+        pre_start_script.append("python3 /opt/tools/open-design-scripts/import.py")
         docker_cmd.extend(["--publish", "127.0.0.1:7456:7456"])
 
     if args.runtime:
